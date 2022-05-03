@@ -3,6 +3,7 @@ import './App.css';
 import React, { useEffect, useRef } from 'react';
 import { AddressSuggestions } from 'react-dadata';
 import { YMaps, Map, Placemark, Polygon } from 'react-yandex-maps';
+import * as turf from '@turf/turf'
 
 const Address = props => {
   const [value, setValue] = React.useState();
@@ -21,10 +22,11 @@ const Address = props => {
   }, [value]);
 
   return (
-    <fieldset>
-      <label>Адрес:</label>
-      <AddressSuggestions token="a6cb90372fd418364a490964fda6d184ded0a304" value={value} onChange={setValue} />
-    </fieldset>
+    <div className="address-container">
+      <fieldset>
+        <label>Адрес: <AddressSuggestions token="a6cb90372fd418364a490964fda6d184ded0a304" value={value} onChange={setValue} /></label>        
+      </fieldset>
+    </div>
   )
 
 }
@@ -37,11 +39,10 @@ const MyMap = props => {
 
   useEffect(() => {
     if (isFirstRender.current) {
-      isFirstRender.current = false // toggle flag after first render/mounting
+      isFirstRender.current = false;
       fetch('data.json')
         .then(response => response.json())
-        .then(data => {  
-          console.log(data);
+        .then(data => {          
           let obj = {
             ...mapData, 
             center: data.map.center.reverse(),
@@ -55,8 +56,8 @@ const MyMap = props => {
                 [pair[0], pair[1]] = [pair[1], pair[0]]              
               })
             })
-          })              
-          
+          })                        
+          props.updateData(obj);
           setMapData(obj);
         });
       return;
@@ -64,17 +65,23 @@ const MyMap = props => {
   }, [mapData]);
 
   return (    
-    <div>      
+    <div className="map-container">      
       <YMaps>        
-          <Map defaultState={{ center: mapData.center, zoom: mapData.zoom }} >    
+          <Map width="100%" height="100%" defaultState={{ center: mapData.center, zoom: mapData.zoom }} modules={["geoObject.addon.balloon", "geoObject.addon.hint"]}>    
               {mapData?.polygons?.map((p, key)=><Polygon
-                  geometry={mapData.polygons[key].geometry.coordinates}
-                  options={{
-                    fillColor: '#00FF00',
-                    strokeColor: '#0000FF',
-                    opacity: 0.5,
-                    strokeWidth: 5,
-                    strokeStyle: 'shortdash',
+                  key={key}
+                  geometry={p.geometry.coordinates}
+                  properties={{
+                    balloonContent: p.title.replace('\n','<br/>'),                   
+                  }}
+                  options={{                    
+                    fillColor: p.fill.color,                    
+                    fillOpacity: p.fill.opacity,
+                    strokeWidth: p.stroke.width,
+                    strokeColor: p.stroke.color,
+                    strokeOpacity: p.stroke.opacity,
+                    opacity:1,
+                    strokeStyle: 'solid',                   
                   }}
                 />)}                           
            
@@ -85,14 +92,35 @@ const MyMap = props => {
   )
  
 }
-class Price extends React.Component {
-  render() {
-    return (
-      <div>
-        Стоимость доставки по адресу:
-      </div>
-    )
-  }
+const Price = (props) => { 
+
+  let price = null;
+
+  if (props.userCoords) {
+      
+      var pt = turf.point(props.userCoords.split(',').reverse());
+      console.log(pt);
+
+      // var poly = turf.polygon([[
+        //   [-81, 41],
+        //   [-81, 47],
+        //   [-72, 47],
+        //   [-72, 41],
+        //   [-81, 41]
+        // ]]);
+    
+        // turf.booleanPointInPolygon(pt, poly);
+        //console.log(pt);   
+    
+      price = 'test';
+      
+  } 
+
+  return (
+    <div className="price-container">         
+      Стоимость доставки по адресу: {price}
+    </div>
+  )  
 }
 
 function App() {
@@ -101,22 +129,26 @@ function App() {
  
   const updateCoords = (coords) => {
     setState(prevState => ({
-      ...prevState,
-      coords: coords
-    })
-    )
-    console.log(coords);
+        ...prevState,
+        coords
+      })
+    ) 
+  }
+
+  const updateMapData = (mapData) => {
+    console.log(mapData);
+    setState(prevState => ({
+        ...prevState,
+        mapData
+      })
+    ) 
   }
 
   return (
-    <div className="container">
-      <div>
-        <Address updateData={updateCoords} />        
-      </div>
-      <div>
-        <MyMap userCoords={state.coords} />
-        <Price />
-      </div>
+    <div className="container">                        
+        <MyMap userCoords={state.coords} updateData={updateMapData} />
+        <Address updateData={updateCoords} />  
+        <Price userCoords={state.coords} mapData={state.mapData} />      
     </div>
   );
 }
