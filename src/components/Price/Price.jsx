@@ -11,7 +11,7 @@ const Price = (props) => {
     }
 
     return (
-        <div className={s.PriceContainer}>
+        <div className={s.PriceContainer + ' '+ (targetPolygon ? s._AV+'_available' : s._NA)}>
             {targetPolygon ? targetPolygon.title : 'Доставка по вашему адресу не производится'}
         </div>
     )

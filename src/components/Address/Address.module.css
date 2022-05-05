@@ -3,6 +3,22 @@
     z-index: 2;
     background-color: rgba(255, 255, 255, .9);   
     animation: show 2s 1;     
+    box-shadow: 0 5px 5px #aaa;
+}
+fieldset{
+    border:none;   
+}
+fieldset label{
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+}
+fieldset label > div {
+    margin: 0 0.5em;    
+}
+fieldset label > div:first-child{text-align: right;}
+fieldset label > div:last-child {
+    width:500px;
 }
 
 @keyframes show {

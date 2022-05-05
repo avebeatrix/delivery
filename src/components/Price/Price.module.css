@@ -1,4 +1,26 @@
 .PriceContainer {
     position: relative;
-    z-index: 2;
+    z-index: 1;
+    animation: fall 1s 1;
+    background-color: #98ffcf;
+    transform-origin: 0 0;
+    padding: 1em;
+    transition: background-color .5s linear;
+    text-align:center;
+}
+
+._NA {
+    background-color: #ff9898;
+}
+
+._AV {}
+
+@keyframes fall {
+    0% {
+        transform: rotateX(90deg);
+    }
+
+    100% {
+        transform: rotateX(0deg);
+    }
 }
